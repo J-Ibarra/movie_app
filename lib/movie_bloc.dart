@@ -5,16 +5,26 @@ import 'movie_repository.dart';
 
 class MoviesBloc {
   final _repository = MovieRepository();
-  final _moviesFetcher = PublishSubject<MovieRespose>();
+  final _moviesFetcher = PublishSubject<List<Movie>>();
 
-  Stream<MovieRespose> get allMovies => _moviesFetcher.stream;
+  List<Movie> list = [];
 
-  getAllMovies() async {
-    MovieRespose itemModel = await _repository.getAllMovies();
-    _moviesFetcher.sink.add(itemModel);
-  }
+  bool loading = false;
+
+  int page = 0;
+
+  Stream<List<Movie>> get allMovies => _moviesFetcher.stream;
 
   dispose() {
     _moviesFetcher.close();
+  }
+
+  getMoreData() async {
+    loading = true;
+    print(page);
+    MovieRespose itemModel = await _repository.getAllMovies(++page);
+    list.addAll(itemModel.data);
+    _moviesFetcher.sink.add(list);
+    loading = false;
   }
 }

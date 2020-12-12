@@ -18,37 +18,47 @@ class MovieList extends StatelessWidget {
   final bloc = MoviesBloc();
   @override
   Widget build(BuildContext context) {
-    bloc.getAllMovies();
     return Scaffold(
       appBar: AppBar(
         title: Text("App Movie"),
       ),
       body: StreamBuilder(
         stream: bloc.allMovies,
-        builder: (context, AsyncSnapshot<MovieRespose> snapshot) {
+        builder: (context, AsyncSnapshot<List<Movie>> snapshot) {
           if (snapshot.hasData) {
-            return list(snapshot.data);
-          }
-          if (snapshot.hasError) {
+            return list(snapshot.data, bloc);
+          } else if (snapshot.hasError) {
             return Text(snapshot.error.toString());
+          } else {
+            bloc.getMoreData();
+            return Center(
+              child: CircularProgressIndicator(),
+            );
           }
-          return Center(
-            child: CircularProgressIndicator(),
-          );
         },
       ),
     );
   }
 }
 
-Widget list(MovieRespose response) {
-  return GridView.builder(
-    itemCount: response.data.length,
-    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-    itemBuilder: (BuildContext context, int index) {
-      return Image.network(response.data[index].imageUrl,
-        fit: BoxFit.cover,
-      );
+Widget list(List<Movie> response, MoviesBloc bloc) {
+  return NotificationListener<ScrollNotification>(
+    onNotification: (notification) {
+      if (notification.metrics.pixels == notification.metrics.maxScrollExtent && !bloc.loading) {
+        bloc.getMoreData();
+      }
+      return true;
     },
+    child: GridView.builder(
+      itemCount: response.length,
+      gridDelegate:
+          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+      itemBuilder: (BuildContext context, int index) {
+        return Image.network(
+          response[index].imageUrl,
+          fit: BoxFit.cover,
+        );
+      },
+    ),
   );
 }

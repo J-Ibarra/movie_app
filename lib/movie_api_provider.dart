@@ -8,8 +8,8 @@ class MovieApiProvider {
   Client client = Client();
   final _apiKey = '4b70732d5b54a8e0683258eadc4aa460';
 
-    Future<MovieRespose> fetchMovieList() async {
-    final response = await client.get("http://api.themoviedb.org/3/movie/popular?api_key=$_apiKey");
+    Future<MovieRespose> fetchMovieList(int page) async {
+    final response = await client.get("http://api.themoviedb.org/3/movie/popular?api_key=$_apiKey&page=$page");
     if (response.statusCode == 200) {
       return MovieRespose.fromJson(json.decode(response.body));
     } else {
